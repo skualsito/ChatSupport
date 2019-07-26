@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Prueba Pruebita Probando la Prueba</title>
+</head>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+<link rel="stylesheet" href="css/chatSupport.css">
+
+<body style="background: #7c90a7;">
+    <button id="atender">Atender</button>
+    <input type="text" name="txtchat" placeholder="chatid">
+    <input type="text" name="txtmensaje" placeholder="mensaje">
+
+    
+</body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="js/socket.io.js"></script>
+
+<script>
+    
+$(document).ready(function () {
+    var socket = io("http://localhost:3000");
+    
+    socket.on('nueva-persona', function(data){
+        $('#atender').text('Atender a '+data.persona).attr('data-id', data.chat);
+
+    });
+    socket.on('msj-nuevo-persona', function(data){
+        console.log(data);
+    });
+    $('#atender').on('click', function () {
+        var id = $(this).attr('data-id');
+        if(id != '' && id != undefined) {
+            socket.emit('atender-persona', {chatId: id, pkadmin: 1}, function(data){
+                if(data){
+                    $('input[name="txtchat"]').val(id);
+                }
+            });
+        }
+    });
+    $('input[name="txtmensaje"]').on('keyup', function (e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+            socket.emit('admin-escribiendo', {chatId: $('input[name="txtchat"]').val()});
+            if(code==13){
+                socket.emit('mensaje-admin', {chatId: $('input[name="txtchat"]').val(), mensaje: $(this).val(), nroMsj: "A"}, function(data){
+                    $('input[name="txtmensaje"]').val('');
+                });
+            }
+    });
+});
+</script>
+</html>
