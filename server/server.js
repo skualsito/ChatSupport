@@ -82,10 +82,18 @@ io.on('connection', function(socket){
             callback(resp);
         });
     });
+
+    socket.on('ver-token', function(data, callback) {
+        verToken(data, socket, function(resp){
+            callback(resp);
+        });
+    });
    
     socket.on('disconnect', function() {
         console.log('se desconecto un pibe');
     });
+
+    
 
     
 });
@@ -112,6 +120,18 @@ function crearMensaje(data, tpersona, callback) {
 function atenderPersona(data, callback) {
     con.query("UPDATE chat SET pksoporte = ?, fkestado = ? WHERE pkchat = ? ", [data.pkadmin, 2, data.chatId], function(err, rows) {
         if (!err) {
+            callback(true);
+        } else {
+            callback(false);
+            console.log(err);
+        }
+    });
+};
+function verToken(token, socket, callback) {
+    console.log(token, socket.handshake.headers.origin);
+    con.query("SELECT * FROM tokens WHERE token = ? AND url = ?", [token.token, socket.handshake.headers.origin], function(err, rows) {
+        console.log(rows);
+        if (rows.length > 0 && !err) {
             callback(true);
         } else {
             callback(false);
