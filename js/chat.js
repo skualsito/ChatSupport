@@ -6,7 +6,7 @@
     var avatarPersona = "user"+rnd;
     var avatarAdmin = " avatar/user"+rnd2+".jpg";
     var nombreAdmin = "Administrador";
-    var token = "md6tokenrecheto";
+    var token = "1-asd";
     var ctoe, socket;
     var nroMsj = 0;
     $.fn.chatSupport = function( options ) {
@@ -36,9 +36,10 @@
  
     };
 
-    function initialize(div, settings){
-        
-        if(verToken(settings.token)){
+    async function initialize(div, settings){
+        var res = await verToken(settings.token);
+        console.log(res);
+        if(res){
             render(div, settings);
         } else {
             console.log('Error en el token');
@@ -123,12 +124,12 @@
         }
     }
 
-    function verToken(tokenaso){
-        if(tokenaso == 'md6tokenrecheto'){
-            return true;
-        } else {
-            return false;
-        }
+    async function verToken(tokenaso){
+        return new Promise(resolve => {
+            socket.emit('ver-token', {token: tokenaso}, function(res){
+                resolve(res);
+            });
+          });       
     }
 
     function admEscribiendo(estado = true) {
