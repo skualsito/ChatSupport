@@ -99,7 +99,7 @@
         if(msjGuardar.length > 0){
             if (!primerMsj) {
                 admEscribiendo();
-                socket.emit('crear-chat', msjGuardar, function(data){
+                socket.emit('crear-chat', msjGuardar, settings.token, function(data){
                     $('.chat-contenedor-mensajes').append('<div class="chat-mensaje emisor"> <img src="'+avatarAdmin+'" alt="'+nombreAdmin+'"/> <p>Bienvenido '+data.persona+'! '+settings.msjNombre+'</p> </div>'); 
                     nombrePersona = data.persona;
                     $('.chat-contenedor-mensajes').scrollTop($('.chat-contenedor-mensajes').height());

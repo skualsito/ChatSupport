@@ -43,8 +43,8 @@ handleDisconnect();
 io.on('connection', function(socket){
     console.log('Se conecto un pibe');
     
-    socket.on('crear-chat', function(nombre, callback){
-        crearChat(nombre, socket, function(resp){
+    socket.on('crear-chat', function(nombre, token, callback){
+        crearChat(nombre, token, socket, function(resp){
             callback(resp);
             socket.join('chat'+resp.chat);
             io.emit('nueva-persona', resp);
@@ -98,14 +98,17 @@ io.on('connection', function(socket){
     
 });
 
-function crearChat(nombre, socket, callback) {
-    con.query("INSERT INTO chat (persona, socketid, fkestado) VALUES (?, ?, ?)", [nombre, socket.id, 1], function(err, rows) {
-        if (!err) {
-            callback({chat: rows.insertId, persona: nombre, socket: socket.id});
-        } else {
-            console.log(err);
-        }
+function crearChat(nombre, token, socket, callback) {
+    con.query("SELECT * FROM tokens WHERE token = ? AND url = ?", [token, socket.handshake.headers.origin], function(err, rows) {
+        con.query("INSERT INTO chat (persona, socketid, fkestado, fksistema) VALUES (?, ?, ?, ?)", [nombre, socket.id, 1, rows[0].fksistema], function(err, rows) {
+            if (!err) {
+                callback({chat: rows.insertId, persona: nombre, socket: socket.id});
+            } else {
+                console.log(err);
+            }
+        });
     });
+    
 };
 function crearMensaje(data, tpersona, callback) {
     con.query("INSERT INTO mensajes (fkpersona, mensaje, fkchat) VALUES (?, ?, ?)", [tpersona, data.mensaje, data.chatId], function(err, rows) {
@@ -128,9 +131,7 @@ function atenderPersona(data, callback) {
     });
 };
 function verToken(token, socket, callback) {
-    console.log(token, socket.handshake.headers.origin);
     con.query("SELECT * FROM tokens WHERE token = ? AND url = ?", [token.token, socket.handshake.headers.origin], function(err, rows) {
-        console.log(rows);
         if (rows.length > 0 && !err) {
             callback(true);
         } else {
